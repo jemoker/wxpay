@@ -43,7 +43,7 @@ class Wxpay {
 	public function pay(){
 		$jsApiParameters = $this->getOpenid()->jsApiParameters();
 		if(!$jsApiParameters){
-			return redirect($this->wxpay_config['call_back_url']);
+			return redirect()->to($this->wxpay_config['call_back_url']);
 		}
 		$return_url = $this->wxpay_config['call_back_url'];
 		return view('jemoker/wxpay::pay',compact('jsApiParameters','return_url'));
