@@ -1,4 +1,5 @@
-<?php namespace Jemoker\Wxpay;
+<?php 
+namespace Jemoker\Wxpay;
 
 use Jemoker\Wxpay\lib\Common;
 use Jemoker\Wxpay\lib\UnifiedOrder;
@@ -41,6 +42,9 @@ class Wxpay {
 
 	public function pay(){
 		$jsApiParameters = $this->getOpenid()->jsApiParameters();
+		if(!$jsApiParameters){
+			return redirect($this->wxpay_config['call_back_url']);
+		}
 		$return_url = $this->wxpay_config['call_back_url'];
 		return view('jemoker/wxpay::pay',compact('jsApiParameters','return_url'));
 	}
@@ -72,6 +76,9 @@ class Wxpay {
 		$this->setParameter("product_id",$this->wxpay_config['product_id']);//商品ID
 
 		$prepay_id = $this->getPrepayId();
+		if(empty($prepay_id)){
+			return false;
+		}
 
 		$this->setPrepayId($prepay_id);
 
