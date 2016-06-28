@@ -1,5 +1,4 @@
-<?php 
-namespace Jemoker\Wxpay;
+<?php namespace Jemoker\Wxpay;
 
 use Jemoker\Wxpay\lib\Common;
 use Jemoker\Wxpay\lib\UnifiedOrder;
@@ -43,7 +42,7 @@ class Wxpay {
 	public function pay(){
 		$jsApiParameters = $this->getOpenid()->jsApiParameters();
 		if(!$jsApiParameters){
-			return redirect()->to($this->wxpay_config['call_back_url']);
+			return redirect($this->wxpay_config['call_back_url']);
 		}
 		$return_url = $this->wxpay_config['call_back_url'];
 		return view('jemoker/wxpay::pay',compact('jsApiParameters','return_url'));
@@ -129,6 +128,7 @@ class Wxpay {
 			//触发微信返回code码
 			$url = $this->createOauthUrlForCode($this->wxpay_config['js_api_call_url'].'?d='.base64_encode(\Request::url()));
 			Header("Location: $url");
+			exit;
 		}else
 		{
 			//获取code码，以获取openid
@@ -153,7 +153,13 @@ class Wxpay {
 		$data = json_decode($res,true);
 
 		if(array_key_exists('errcode',$data)){
-			dd($data);
+			$req_url = \Request::url();
+			$req_url = preg_replace("/\?code=[a-z0-9A-Z]*\&*/is", "?", $req_url);
+			$req_url = preg_replace("/\&code=[a-z0-9A-Z]*\&*/is", "&", $req_url);
+			$req_url = preg_replace("/(\&|\?)$/is", "", $req_url);
+			$url = $this->createOauthUrlForCode($this->wxpay_config['js_api_call_url'].'?d='.base64_encode($req_url));
+			Header("Location: $url");
+			exit;
 		}
 
 		$this->openid = $data["openid"];
