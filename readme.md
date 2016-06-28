@@ -32,31 +32,32 @@ WeiXin Payment
 
 支付调用 
 ```php  
-  $config = array(
-    'body'=>'',
-    'total_fee' =>'',
-    ...
+  $wxpay = app('wxpay');
+  $params = array(
+  	'body' => 'xxx',
+  	'total_fee' => 'xxx',
+  	'out_trade_no' => 'xxx',
+  	'notify_url' => 'xxx',
+  	'call_back_url' => 'xxx'
   );
-  Wxpay::instance('jsApi')->setConfig($config)->pay();
+  $wxpay->setParams($params);
 ```
 
 支付回调
 
 ```php
-  $wxpay = Wxpay::instance('jsApi');
-  $notify = $wxpay->verifyNotify(); //验证回调
+  $wxpay = app('wxpay');
+  $notify = $wxpay->verifyNotify(); 
   
   if($notify){
     //业务逻辑
-    
+    switch ($wxpay->data['result_code']) {
+    	...
+    }
     return 'success';
   }else{
-    
     //业务逻辑
-    
-    
-	return 'fail';
+    return 'fail';
   }
-  
 ```
 
