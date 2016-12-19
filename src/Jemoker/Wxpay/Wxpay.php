@@ -48,6 +48,24 @@ class Wxpay {
 		return view('jemoker/wxpay::pay',compact('jsApiParameters','return_url'));
 	}
 
+	public function native(){
+		$params = array(
+			'appid' => $this->wxpay_config['appid'],
+			'mch_id' => $this->wxpay_config['mch_id'],
+			'product_id' => $this->wxpay_config['product_id'],
+			'time_stamp' => time(),
+			'nonce_str' => $this->createNonceStr(),
+		);
+
+		$sign_str = $this->getSign($params);
+		$params['sign'] = $sign_str;
+		$params['long_url'] = 'weixin://wxpay/bizpayurl?'.$this->ToUrlParams($params);
+		unset($params['sign']);
+		$sign_str = $this->getSign($params);
+		$params['sign'] = $sign_str;
+		return $this->shorturl($params);
+	}
+
 	public function verifyNotify(){
 		$notify = $this->checkSign();
 		return $notify;
@@ -84,6 +102,36 @@ class Wxpay {
 		$jsApiParameters = $this->getParameters();
 		//echo $jsApiParameters;exit;
 		return $jsApiParameters;
+	}
+
+	public function nativeParameters(){
+		$this->setParameter("openid", $this->openid);//商品描述
+		$this->setParameter("notify_url", $this->wxpay_config['notify_url']);//通知地址
+		$this->setParameter("trade_type", "NATIVE");//交易类型
+
+		//订单相关
+		$this->setParameter("body", $this->wxpay_config['body']);//商品描述
+
+		$this->setParameter("out_trade_no", $this->wxpay_config['out_trade_no']);//商户订单号
+		$this->setParameter("total_fee", $this->wxpay_config['total_fee']);//总金额
+
+		//非必填参数，商户可根据实际情况选填
+		$this->setParameter("sub_mch_id",$this->wxpay_config['sub_mch_id']);//子商户号
+		$this->setParameter("device_info",$this->wxpay_config['device_info']);//设备号
+		$this->setParameter("attach",$this->wxpay_config['attach']);//附加数据
+		$this->setParameter("time_start",$this->wxpay_config['time_start']);//交易起始时间
+		$this->setParameter("time_expire",$this->wxpay_config['time_expire']);//交易结束时间
+		$this->setParameter("goods_tag",$this->wxpay_config['goods_tag']);//商品标记
+		$this->setParameter("product_id",$this->wxpay_config['product_id']);//商品ID
+
+		$prepay_id = $this->getPrepayId();
+		if(empty($prepay_id)){
+			return false;
+		}
+
+		$this->setPrepayId($prepay_id);
+
+		return $this->createXml();
 	}
 
 
@@ -202,4 +250,37 @@ class Wxpay {
 		return $this->parameters;
 	}
 
+	/**
+	 *
+	 * 参数数组转换为url参数
+	 * @param array $urlObj
+	 */
+	private function ToUrlParams($urlObj)
+	{
+		$buff = "";
+		foreach ($urlObj as $k => $v)
+		{
+			$buff .= $k . "=" . $v . "&";
+		}
+
+		$buff = trim($buff, "&");
+		return $buff;
+	}
+
+	/**
+	 * 转换短链接
+	 */
+	private function shorturl($params, $timeOut = 6)
+	{
+		$url = "https://api.mch.weixin.qq.com/tools/shorturl";
+
+		$xml = $this->arrayToXml($params);
+		$response = $this->postXmlCurl($xml, $url, $timeOut);
+		$result = $this->xmlToArray($response);
+		if(isset($result['short_url'])){
+			return $result['short_url'];
+		}
+
+		return null;
+	}
 }
