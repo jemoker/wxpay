@@ -128,10 +128,17 @@ class Wxpay {
 		if(empty($prepay_id)){
 			return false;
 		}
+		$params = array(
+			'return_code' => 'SUCCESS',
+			'appid' => $this->wxpay_config['appid'],
+			'mch_id' => $this->wxpay_config['mch_id'],
+			'nonce_str' => $this->createNonceStr(),
+			'prepay_id' => $prepay_id,
+			'result_code' => 'SUCCESS',
+		);
 
-		$this->setPrepayId($prepay_id);
-
-		return $this->createXml();
+		$params['sign'] = $this->getSign($params);
+		return  $this->arrayToXml($params);
 	}
 
 
@@ -282,5 +289,9 @@ class Wxpay {
 		}
 
 		return null;
+	}
+
+	public function setOpenid($openid){
+		$this->openid = $openid;
 	}
 }
