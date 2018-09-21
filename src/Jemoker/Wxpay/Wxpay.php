@@ -1,4 +1,5 @@
-<?php namespace Jemoker\Wxpay;
+<?php 
+namespace Jemoker\Wxpay;
 
 use Jemoker\Wxpay\lib\Common;
 use Jemoker\Wxpay\lib\UnifiedOrder;
@@ -102,6 +103,31 @@ class Wxpay {
 		$jsApiParameters = $this->getParameters();
 		//echo $jsApiParameters;exit;
 		return $jsApiParameters;
+	}
+
+	public function mWeb(){
+		$this->setParameter("notify_url", $this->wxpay_config['notify_url']);//通知地址
+		$this->setParameter("trade_type", "MWEB");//交易类型
+
+		//订单相关
+		$this->setParameter("body", $this->wxpay_config['body']);//商品描述
+
+		$this->setParameter("out_trade_no", $this->wxpay_config['out_trade_no']);//商户订单号
+		$this->setParameter("total_fee", $this->wxpay_config['total_fee']);//总金额
+
+		//非必填参数，商户可根据实际情况选填
+		$this->setParameter("sub_mch_id",$this->wxpay_config['sub_mch_id']);//子商户号
+		$this->setParameter("device_info",$this->wxpay_config['device_info']);//设备号
+		$this->setParameter("attach",$this->wxpay_config['attach']);//附加数据
+		$this->setParameter("time_start",$this->wxpay_config['time_start']);//交易起始时间
+		$this->setParameter("time_expire",$this->wxpay_config['time_expire']);//交易结束时间
+		$this->setParameter("goods_tag",$this->wxpay_config['goods_tag']);//商品标记
+		$this->setParameter("product_id",$this->wxpay_config['product_id']);//商品ID
+        $result = $this->getResult();
+        if(isset($result['mweb_url']) && $result['mweb_url']){
+            return  $result['mweb_url'];
+        }
+        return false;
 	}
 
 	public function nativeParameters(){
